@@ -1,0 +1,38 @@
+# Standards: 0.1
+---
+- name: Fact discord user
+  set_fact:
+    discord_user: "{{ discord_user | default(homebrew_user) | default(ansible_user_id) }}"
+  tags:
+    - discord
+
+- become: "{{ (discord_user != ansible_user_id) | bool }}"
+  become_user: "{{ discord_user }}"
+  block:
+    - name: Install required package
+      ignore_errors: True
+      homebrew_cask:
+        name: discord
+        greedy: True
+        options: appdir=/Applications
+        accept_external_apps: False
+        state: upgraded
+      tags:
+        - discord
+
+    - name: Remove quarantine flag
+      register: discord_quarantine
+      failed_when: discord_quarantine.rc != 0 and "No such xattr" not in discord_quarantine.stderr
+      changed_when: discord_quarantine.rc == 0
+      command: xattr -d com.apple.quarantine /Applications/Discord.app
+      tags:
+        - discord
+
+    - name: Start application
+      when: discord_started
+      changed_when: False
+      command: open -j /Applications/Discord.app
+      tags:
+        - discord
+
+...
