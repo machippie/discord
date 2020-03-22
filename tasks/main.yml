@@ -20,19 +20,12 @@
       tags:
         - discord
 
-    - name: Remove quarantine flag
-      register: discord_quarantine
-      failed_when: discord_quarantine.rc != 0 and "No such xattr" not in discord_quarantine.stderr
-      changed_when: discord_quarantine.rc == 0
-      command: xattr -d com.apple.quarantine /Applications/Discord.app
-      tags:
-        - discord
-
-    - name: Start application
-      when: discord_started
-      changed_when: False
-      command: open -j /Applications/Discord.app
-      tags:
-        - discord
+- name: Remove quarantine flag
+  register: discord_quarantine
+  failed_when: discord_quarantine.rc != 0 and "No such xattr" not in discord_quarantine.stderr
+  changed_when: discord_quarantine.rc == 0
+  command: xattr -d com.apple.quarantine /Applications/Discord.app
+  tags:
+    - discord
 
 ...
